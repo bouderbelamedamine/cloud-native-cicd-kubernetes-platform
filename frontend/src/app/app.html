@@ -1,0 +1,178 @@
+<div class="app-container">
+
+  <header class="app-header">
+    <div class="header-title">
+      <span class="logo-icon">📦</span>
+      <div>
+        <h1>Stock Management</h1>
+        <p>Cloud-native inventory dashboard</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">Total products</span>
+      <span class="stat-value">{{ totalProducts() }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">In stock</span>
+      <span class="stat-value stat-success">{{ inStockCount() }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Low stock</span>
+      <span class="stat-value stat-warning">{{ lowStockCount() }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Out of stock</span>
+      <span class="stat-value stat-danger">{{ outOfStockCount() }}</span>
+    </div>
+  </section>
+
+  <section class="form-card">
+    <h2>Categories</h2>
+    <div class="form-row">
+      <input
+        type="text"
+        name="categoryName"
+        placeholder="Category name"
+        [(ngModel)]="newCategoryName"
+        class="input-name">
+      <button (click)="addCategory()" class="btn-add">+ Add category</button>
+    </div>
+
+    @if (categories().length > 0) {
+      <div class="category-chips">
+        @for (cat of categories(); track cat.id) {
+          <span class="chip">
+            {{ cat.name }}
+            <button (click)="deleteCategory(cat.id)" class="chip-delete" aria-label="Delete">×</button>
+          </span>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="form-card">
+    <h2>Add product</h2>
+    <div class="form-row">
+      <input
+        type="text"
+        name="productName"
+        placeholder="Product name"
+        [(ngModel)]="newProductName"
+        class="input-name">
+      <input
+        type="number"
+        name="productQuantity"
+        placeholder="Quantity"
+        [(ngModel)]="newProductQuantity"
+        class="input-qty">
+      <select name="productUnit" [(ngModel)]="newProductUnit" class="input-unit">
+        @for (unit of units; track unit) {
+          <option [value]="unit">{{ unit }}</option>
+        }
+      </select>
+      <select name="productCategory" [(ngModel)]="newProductCategoryId" class="input-category">
+        <option [ngValue]="null">No category</option>
+        @for (cat of categories(); track cat.id) {
+          <option [ngValue]="cat.id">{{ cat.name }}</option>
+        }
+      </select>
+      <button (click)="addProduct()" class="btn-add">+ Add</button>
+    </div>
+  </section>
+
+  <section class="form-card">
+    <h2>Stock movement</h2>
+    <div class="form-row">
+      <select name="movementProduct" [(ngModel)]="selectedProductId" class="input-name">
+        <option [ngValue]="null">Select a product</option>
+        @for (product of products(); track product.id) {
+          <option [ngValue]="product.id">{{ product.name }} (stock: {{ product.quantity }})</option>
+        }
+      </select>
+      <input
+        type="number"
+        name="movementQuantity"
+        placeholder="Quantity"
+        [(ngModel)]="movementQuantity"
+        class="input-qty">
+      <select name="movementType" [(ngModel)]="movementType" class="input-unit">
+        @for (type of movementTypes; track type) {
+          <option [value]="type">{{ type === 'IN' ? 'IN (add)' : 'OUT (remove)' }}</option>
+        }
+      </select>
+      <button (click)="addMovement()" class="btn-add">Apply</button>
+    </div>
+  </section>
+
+  <section class="table-card">
+    <h2>Products</h2>
+    @if (products().length === 0) {
+      <p class="empty-state">No products yet. Add your first product above.</p>
+    } @else {
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Unit</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of products(); track product.id) {
+            <tr>
+              <td class="product-name">{{ product.name }}</td>
+              <td>{{ product.quantity }}</td>
+              <td>{{ product.unit }}</td>
+              <td>
+                <span class="badge" [class]="getStatusClass(product.status)">
+                  {{ getStatusLabel(product.status) }}
+                </span>
+              </td>
+              <td class="text-right">
+                <button (click)="deleteProduct(product.id)" class="btn-delete">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <section class="table-card">
+    <h2>Movement history</h2>
+    @if (movements().length === 0) {
+      <p class="empty-state">No movements yet.</p>
+    } @else {
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Type</th>
+            <th>Quantity</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (movement of movements(); track movement.id) {
+            <tr>
+              <td class="product-name">{{ movement.product?.name || '-' }}</td>
+              <td>
+                <span class="badge" [class]="movement.type === 'IN' ? 'badge-success' : 'badge-danger'">
+                  {{ movement.type === 'IN' ? 'IN' : 'OUT' }}
+                </span>
+              </td>
+              <td>{{ movement.quantity }}</td>
+              <td>{{ movement.date }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+</div>
