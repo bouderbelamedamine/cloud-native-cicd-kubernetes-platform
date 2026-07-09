@@ -1,0 +1,52 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: stock-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: stockdb
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stock-network
+
+  backend:
+    image: stock-backend:latest
+    container_name: stock-backend
+    environment:
+      DB_HOST: mysql
+      DB_NAME: stockdb
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - stock-network
+
+  frontend:
+    image: stock-frontend:latest
+    container_name: stock-frontend
+    ports:
+      - "8090:80"
+    depends_on:
+      - backend
+    networks:
+      - stock-network
+
+volumes:
+  mysql-data:
+
+networks:
+  stock-network:
+    driver: bridge
